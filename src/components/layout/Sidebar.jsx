@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, DollarSign, Video, Flame,
-  Brain, GitBranch, Settings, LogOut, Zap
+  Brain, GitBranch, Settings, LogOut, Zap, CreditCard
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -12,6 +12,7 @@ const nav = [
   { to: '/heatmap',   icon: Flame,           label: 'Heatmap' },
   { to: '/diagnosis', icon: Brain,           label: 'AI Diagnosis' },
   { to: '/funnels',   icon: GitBranch,       label: 'Funnels' },
+  { to: '/billing',   icon: CreditCard,      label: 'Billing' },
 ]
 
 export default function Sidebar() {

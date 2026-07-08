@@ -8,6 +8,7 @@ import Sessions from './pages/Sessions'
 import Heatmap from './pages/Heatmap'
 import AIDiagnosis from './pages/AIDiagnosis'
 import Funnels from './pages/Funnels'
+import Billing from './pages/Billing'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="heatmap" element={<Heatmap />} />
         <Route path="diagnosis" element={<AIDiagnosis />} />
         <Route path="funnels" element={<Funnels />} />
+        <Route path="billing" element={<Billing />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
