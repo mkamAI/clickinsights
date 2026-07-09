@@ -6,13 +6,13 @@ import {
 import { useAuth } from '../../context/AuthContext'
 
 const nav = [
-  { to: '/',          icon: LayoutDashboard, label: 'Overview' },
-  { to: '/revenue',   icon: DollarSign,      label: 'Revenue Impact' },
-  { to: '/sessions',  icon: Video,           label: 'Sessions' },
-  { to: '/heatmap',   icon: Flame,           label: 'Heatmap' },
-  { to: '/diagnosis', icon: Brain,           label: 'AI Diagnosis' },
-  { to: '/funnels',   icon: GitBranch,       label: 'Funnels' },
-  { to: '/billing',   icon: CreditCard,      label: 'Billing' },
+  { to: '/app',          icon: LayoutDashboard, label: 'Overview' },
+  { to: '/app/revenue',  icon: DollarSign,      label: 'Revenue Impact' },
+  { to: '/app/sessions', icon: Video,           label: 'Sessions' },
+  { to: '/app/heatmap',  icon: Flame,           label: 'Heatmap' },
+  { to: '/app/diagnosis',icon: Brain,           label: 'AI Diagnosis' },
+  { to: '/app/funnels',  icon: GitBranch,       label: 'Funnels' },
+  { to: '/app/billing',  icon: CreditCard,      label: 'Billing' },
 ]
 
 export default function Sidebar() {

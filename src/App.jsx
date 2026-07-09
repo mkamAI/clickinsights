@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout from './components/layout/Layout'
+import Landing from './pages/Landing'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import RevenueImpact from './pages/RevenueImpact'
@@ -24,8 +25,14 @@ function AppRoutes() {
   const { user } = useAuth()
   return (
     <Routes>
-      <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
-      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+      {/* Public landing page */}
+      <Route path="/" element={<Landing />} />
+
+      {/* Auth */}
+      <Route path="/auth" element={user ? <Navigate to="/app" replace /> : <Auth />} />
+
+      {/* Protected app */}
+      <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="revenue" element={<RevenueImpact />} />
         <Route path="sessions" element={<Sessions />} />
@@ -34,6 +41,8 @@ function AppRoutes() {
         <Route path="funnels" element={<Funnels />} />
         <Route path="billing" element={<Billing />} />
       </Route>
+
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
