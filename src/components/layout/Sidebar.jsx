@@ -27,7 +27,7 @@ export default function Sidebar() {
             <Zap size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white tracking-tight">ClickInsights</p>
+            <p className="text-sm font-bold text-gray-900 tracking-tight">ClickInsights</p>
             <p className="text-[10px] text-brand-400 font-medium">.AI</p>
           </div>
         </div>
@@ -39,8 +39,8 @@ export default function Sidebar() {
           <div className="w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
             <div className="w-2 h-2 rounded-full bg-emerald-400" />
           </div>
-          <span className="text-xs text-slate-300 truncate font-medium">mystore.com</span>
-          <svg className="w-3 h-3 text-slate-500 ml-auto flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <span className="text-xs text-gray-700 truncate font-medium">mystore.com</span>
+          <svg className="w-3 h-3 text-gray-400 ml-auto flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
@@ -56,14 +56,14 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
                 isActive
-                  ? 'bg-brand-600/20 text-brand-300 font-medium'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-surface-hover'
+                  ? 'bg-blue-50 text-blue-700 font-medium'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-surface-hover'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={16} className={isActive ? 'text-brand-400' : ''} />
+                <Icon size={16} className={isActive ? 'text-blue-600' : ''} />
                 {label}
                 {label === 'Revenue Impact' && (
                   <span className="ml-auto text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-semibold">LIVE</span>
@@ -76,19 +76,19 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-3 pb-4 space-y-0.5 border-t border-surface-border pt-3">
-        <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-surface-hover w-full transition-all">
+        <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-surface-hover w-full transition-all">
           <Settings size={16} />
           Settings
         </button>
         <button
           onClick={signOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/10 w-full transition-all"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-400 hover:bg-red-500/10 w-full transition-all"
         >
           <LogOut size={16} />
           Sign out
         </button>
         <div className="px-3 pt-2">
-          <p className="text-[11px] text-slate-600 truncate">{user?.email}</p>
+          <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
         </div>
       </div>
     </aside>

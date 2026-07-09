@@ -36,11 +36,11 @@ export default function Funnels() {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <GitBranch size={20} className="text-brand-400" />
+        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <GitBranch size={20} className="text-blue-600" />
           Funnels
         </h1>
-        <p className="text-slate-500 text-sm mt-0.5">Step-by-step drop-off analysis with revenue impact</p>
+        <p className="text-gray-400 text-sm mt-0.5">Step-by-step drop-off analysis with revenue impact</p>
       </div>
 
       {/* Funnel selector */}
@@ -51,8 +51,8 @@ export default function Funnels() {
             onClick={() => setActiveFunnel(f)}
             className={`px-4 py-2 text-sm rounded-lg font-medium transition-all ${
               activeFunnel === f
-                ? 'bg-brand-600 text-white'
-                : 'bg-surface-card border border-surface-border text-slate-400 hover:text-slate-200'
+                ? 'bg-blue-600 text-gray-900'
+                : 'bg-surface-card border border-surface-border text-gray-500 hover:text-gray-900'
             }`}
           >
             {f}
@@ -63,19 +63,19 @@ export default function Funnels() {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-surface-card border border-surface-border rounded-xl p-4">
-          <p className="text-xs text-slate-500 mb-1">Overall Conversion</p>
-          <p className="text-2xl font-bold text-white">{steps[steps.length - 1].pct}%</p>
-          <p className="text-xs text-slate-600 mt-0.5">{steps[steps.length - 1].visitors.toLocaleString()} of {maxVisitors.toLocaleString()} converted</p>
+          <p className="text-xs text-gray-400 mb-1">Overall Conversion</p>
+          <p className="text-2xl font-bold text-gray-900">{steps[steps.length - 1].pct}%</p>
+          <p className="text-xs text-gray-400 mt-0.5">{steps[steps.length - 1].visitors.toLocaleString()} of {maxVisitors.toLocaleString()} converted</p>
         </div>
         <div className="bg-surface-card border border-surface-border rounded-xl p-4">
-          <p className="text-xs text-slate-500 mb-1">Biggest Drop-off</p>
+          <p className="text-xs text-gray-400 mb-1">Biggest Drop-off</p>
           <p className="text-2xl font-bold text-red-400">{worstStep.dropPct}%</p>
-          <p className="text-xs text-slate-600 mt-0.5">at {worstStep.step}</p>
+          <p className="text-xs text-gray-400 mt-0.5">at {worstStep.step}</p>
         </div>
         <div className="bg-surface-card border border-surface-border rounded-xl p-4">
-          <p className="text-xs text-slate-500 mb-1">Total Revenue Lost</p>
+          <p className="text-xs text-gray-400 mb-1">Total Revenue Lost</p>
           <p className="text-2xl font-bold text-red-400">${totalLost.toLocaleString()}</p>
-          <p className="text-xs text-slate-600 mt-0.5">estimated this month</p>
+          <p className="text-xs text-gray-400 mt-0.5">estimated this month</p>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ export default function Funnels() {
                     <div className="flex items-center gap-2 text-xs">
                       <span className="text-red-400 font-semibold">-{steps[i - 1].dropPct}% dropped off</span>
                       {steps[i - 1].lostRevenue > 0 && (
-                        <span className="text-slate-500">· ~${steps[i - 1].lostRevenue.toLocaleString()} lost/mo</span>
+                        <span className="text-gray-400">· ~${steps[i - 1].lostRevenue.toLocaleString()} lost/mo</span>
                       )}
                       {isWorst && (
                         <span className="flex items-center gap-1 text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded font-medium">
@@ -116,12 +116,12 @@ export default function Funnels() {
                         style={{ background: isLast ? '#10b981' : isWorst ? '#ef4444' : '#6366f1' }} />
                     </div>
                     <div className="flex-1 flex items-center justify-between">
-                      <span className="text-sm text-slate-300">{step.step}</span>
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                      <span className="text-sm text-gray-700">{step.step}</span>
+                      <div className="flex items-center gap-4 text-xs text-gray-400">
                         <span className="flex items-center gap-1">
                           <Users size={11} /> {step.visitors.toLocaleString()}
                         </span>
-                        <span className={`font-semibold ${isLast ? 'text-emerald-400' : 'text-slate-300'}`}>
+                        <span className={`font-semibold ${isLast ? 'text-emerald-400' : 'text-gray-700'}`}>
                           {step.pct}%
                         </span>
                       </div>
@@ -143,7 +143,7 @@ export default function Funnels() {
                       }}
                     />
                     <div className="absolute inset-0 flex items-center px-3">
-                      <ChevronRight size={14} className="text-white/30" />
+                      <ChevronRight size={14} className="text-gray-900/30" />
                     </div>
                   </div>
                 </div>
@@ -156,33 +156,33 @@ export default function Funnels() {
       {/* Step detail table */}
       <div className="bg-surface-card border border-surface-border rounded-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-surface-border">
-          <h2 className="text-sm font-semibold text-white">Step Breakdown</h2>
+          <h2 className="text-sm font-semibold text-gray-900">Step Breakdown</h2>
         </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-surface-border">
               {['Step', 'Visitors', 'Drop-off', 'Conversion', 'Revenue Lost/mo'].map(h => (
-                <th key={h} className="text-left text-xs text-slate-500 font-medium px-5 py-3">{h}</th>
+                <th key={h} className="text-left text-xs text-gray-400 font-medium px-5 py-3">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {steps.map((step, i) => (
               <tr key={i} className="border-b border-surface-border/50 hover:bg-surface-hover transition-colors">
-                <td className="px-5 py-3 text-sm text-slate-300">{step.step}</td>
-                <td className="px-5 py-3 text-sm text-slate-300">{step.visitors.toLocaleString()}</td>
+                <td className="px-5 py-3 text-sm text-gray-700">{step.step}</td>
+                <td className="px-5 py-3 text-sm text-gray-700">{step.visitors.toLocaleString()}</td>
                 <td className="px-5 py-3">
                   {step.dropPct > 0
                     ? <span className={`text-sm font-medium ${step.dropPct >= 50 ? 'text-red-400' : step.dropPct >= 30 ? 'text-orange-400' : 'text-yellow-400'}`}>
                         -{step.dropPct}%
                       </span>
-                    : <span className="text-slate-600 text-sm">—</span>}
+                    : <span className="text-gray-400 text-sm">—</span>}
                 </td>
-                <td className="px-5 py-3 text-sm text-slate-300">{step.pct}%</td>
+                <td className="px-5 py-3 text-sm text-gray-700">{step.pct}%</td>
                 <td className="px-5 py-3 text-sm">
                   {step.lostRevenue > 0
                     ? <span className="text-red-400 font-medium">${step.lostRevenue.toLocaleString()}</span>
-                    : <span className="text-slate-600">—</span>}
+                    : <span className="text-gray-400">—</span>}
                 </td>
               </tr>
             ))}

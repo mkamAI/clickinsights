@@ -10,7 +10,7 @@ const exitPoints = [
     lostMRR: 14200,
     lostARR: 170400,
     effort: 'Quick win',
-    effortColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    effortColor: 'text-emerald-400 bg-emerald-50 border-emerald-200',
     fix: 'Add a mid-tier plan between Pro ($49) and Enterprise ($299). The pricing jump causes anchor shock — 72% of exits happen within 8s of landing on this page.',
     expectedRecovery: 4260,
     recoveryPct: 30,
@@ -25,7 +25,7 @@ const exitPoints = [
     lostMRR: 11800,
     lostARR: 141600,
     effort: 'Quick win',
-    effortColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    effortColor: 'text-emerald-400 bg-emerald-50 border-emerald-200',
     fix: `Remove the "Company VAT number" required field. It's blocking 68% of individual buyers. Move billing fields to after payment intent is captured.`,
     expectedRecovery: 4720,
     recoveryPct: 40,
@@ -55,7 +55,7 @@ const exitPoints = [
     lostMRR: 7100,
     lostARR: 85200,
     effort: 'Quick win',
-    effortColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    effortColor: 'text-emerald-400 bg-emerald-50 border-emerald-200',
     fix: 'Reduce form from 7 fields to 3 (email + password only). Every additional field costs ~8% conversion. Current form is the #1 mobile drop-off point.',
     expectedRecovery: 2840,
     recoveryPct: 40,
@@ -70,7 +70,7 @@ const exitPoints = [
     lostMRR: 5230,
     lostARR: 62760,
     effort: 'Major rebuild',
-    effortColor: 'text-red-400 bg-red-500/10 border-red-500/20',
+    effortColor: 'text-red-400 bg-red-50 border-red-200',
     fix: 'Hero headline is too generic. Visitors from paid ads bounce because the message doesn\'t match ad copy. Personalize headline by traffic source.',
     expectedRecovery: 1569,
     recoveryPct: 30,
@@ -92,8 +92,8 @@ export default function RevenueImpact() {
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-white">Revenue Impact</h1>
-        <p className="text-slate-500 text-sm mt-0.5">AI-calculated revenue leaks across your funnel</p>
+        <h1 className="text-xl font-bold text-gray-900">Revenue Impact</h1>
+        <p className="text-gray-400 text-sm mt-0.5">AI-calculated revenue leaks across your funnel</p>
       </div>
 
       {/* Banner */}
@@ -101,21 +101,21 @@ export default function RevenueImpact() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
         <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <p className="text-slate-400 text-xs font-medium mb-1 uppercase tracking-wider">Total MRR at Risk</p>
-            <p className="text-4xl font-bold text-white">${totalLostMRR.toLocaleString()}</p>
+            <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Total MRR at Risk</p>
+            <p className="text-4xl font-bold text-gray-900">${totalLostMRR.toLocaleString()}</p>
             <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
               <TrendingDown size={13} /> +$3,200 vs last month
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-xs font-medium mb-1 uppercase tracking-wider">Projected ARR Loss</p>
-            <p className="text-4xl font-bold text-white">${(totalLostMRR * 12).toLocaleString()}</p>
-            <p className="text-slate-500 text-sm mt-1">if nothing changes</p>
+            <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Projected ARR Loss</p>
+            <p className="text-4xl font-bold text-gray-900">${(totalLostMRR * 12).toLocaleString()}</p>
+            <p className="text-gray-400 text-sm mt-1">if nothing changes</p>
           </div>
           <div>
-            <p className="text-slate-400 text-xs font-medium mb-1 uppercase tracking-wider">Quick-Win Recovery</p>
+            <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Quick-Win Recovery</p>
             <p className="text-4xl font-bold text-emerald-400">${totalRecoverable.toLocaleString()}/mo</p>
-            <p className="text-slate-500 text-sm mt-1">from top 4 fixes (2 weeks)</p>
+            <p className="text-gray-400 text-sm mt-1">from top 4 fixes (2 weeks)</p>
           </div>
         </div>
       </div>
@@ -123,14 +123,14 @@ export default function RevenueImpact() {
       {/* ROI Calculator */}
       <div className="bg-surface-card border border-surface-border rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Zap size={16} className="text-brand-400" />
-          <h2 className="text-sm font-semibold text-white">Recovery Simulator</h2>
+          <Zap size={16} className="text-blue-600" />
+          <h2 className="text-sm font-semibold text-gray-900">Recovery Simulator</h2>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex-1">
-            <div className="flex justify-between text-xs text-slate-400 mb-2">
+            <div className="flex justify-between text-xs text-gray-500 mb-2">
               <span>If you recover this % of lost revenue</span>
-              <span className="text-white font-semibold">{roiConversion}%</span>
+              <span className="text-gray-900 font-semibold">{roiConversion}%</span>
             </div>
             <input
               type="range"
@@ -140,21 +140,21 @@ export default function RevenueImpact() {
               onChange={e => setRoiConversion(+e.target.value)}
               className="w-full accent-brand-500 h-1.5 cursor-pointer"
             />
-            <div className="flex justify-between text-xs text-slate-600 mt-1">
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>5%</span><span>80%</span>
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-xs text-slate-500 mb-0.5">Monthly recovery</p>
+            <p className="text-xs text-gray-400 mb-0.5">Monthly recovery</p>
             <p className="text-2xl font-bold text-emerald-400">${estimated.toLocaleString()}</p>
-            <p className="text-xs text-slate-500">${(estimated * 12).toLocaleString()}/yr ARR</p>
+            <p className="text-xs text-gray-400">${(estimated * 12).toLocaleString()}/yr ARR</p>
           </div>
         </div>
       </div>
 
       {/* Exit points */}
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-white px-1">Exit Points — AI Diagnosed</h2>
+        <h2 className="text-sm font-semibold text-gray-900 px-1">Exit Points — AI Diagnosed</h2>
         {exitPoints.map((ep, i) => (
           <div
             key={i}
@@ -173,27 +173,27 @@ export default function RevenueImpact() {
 
               {/* Page */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white">{ep.label}</p>
-                <p className="text-xs text-slate-500 font-mono">{ep.page}</p>
+                <p className="text-sm font-medium text-gray-900">{ep.label}</p>
+                <p className="text-xs text-gray-400 font-mono">{ep.page}</p>
               </div>
 
               {/* Stats */}
               <div className="hidden md:flex items-center gap-8 text-sm">
                 <div className="text-center">
-                  <p className="text-white font-medium">{ep.visitors.toLocaleString()}</p>
-                  <p className="text-xs text-slate-500">visitors</p>
+                  <p className="text-gray-900 font-medium">{ep.visitors.toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">visitors</p>
                 </div>
                 <div className="text-center">
                   <p className="text-red-400 font-bold">{ep.exitRate}%</p>
-                  <p className="text-xs text-slate-500">exit rate</p>
+                  <p className="text-xs text-gray-400">exit rate</p>
                 </div>
                 <div className="text-center">
                   <p className="text-red-400 font-bold">${ep.lostMRR.toLocaleString()}</p>
-                  <p className="text-xs text-slate-500">lost/mo</p>
+                  <p className="text-xs text-gray-400">lost/mo</p>
                 </div>
                 <div className="text-center">
                   <p className="text-emerald-400 font-bold">+${ep.expectedRecovery.toLocaleString()}</p>
-                  <p className="text-xs text-slate-500">recoverable</p>
+                  <p className="text-xs text-gray-400">recoverable</p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded border font-medium ${ep.effortColor}`}>
                   {ep.effort}
@@ -202,7 +202,7 @@ export default function RevenueImpact() {
 
               <ChevronRight
                 size={16}
-                className={`text-slate-500 flex-shrink-0 transition-transform ${expanded === i ? 'rotate-90' : ''}`}
+                className={`text-gray-400 flex-shrink-0 transition-transform ${expanded === i ? 'rotate-90' : ''}`}
               />
             </button>
 
@@ -210,31 +210,31 @@ export default function RevenueImpact() {
             {expanded === i && (
               <div className="border-t border-surface-border bg-surface/50 px-5 py-4">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-7 h-7 rounded-lg bg-brand-600/20 border border-brand-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Zap size={13} className="text-brand-400" />
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Zap size={13} className="text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-brand-400 font-semibold mb-1 uppercase tracking-wider">AI Diagnosis</p>
-                    <p className="text-sm text-slate-300 leading-relaxed">{ep.fix}</p>
+                    <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">AI Diagnosis</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{ep.fix}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2.5">
-                    <p className="text-xs text-slate-500 mb-0.5">Exit trend</p>
+                    <p className="text-xs text-gray-400 mb-0.5">Exit trend</p>
                     <p className="text-sm font-semibold text-red-400">{ep.trend}</p>
                   </div>
                   <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2.5">
-                    <p className="text-xs text-slate-500 mb-0.5">If fixed, recover</p>
+                    <p className="text-xs text-gray-400 mb-0.5">If fixed, recover</p>
                     <p className="text-sm font-semibold text-emerald-400">+${ep.expectedRecovery.toLocaleString()}/mo</p>
                   </div>
                   <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2.5">
-                    <p className="text-xs text-slate-500 mb-0.5">ARR upside</p>
-                    <p className="text-sm font-semibold text-white">${(ep.expectedRecovery * 12).toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mb-0.5">ARR upside</p>
+                    <p className="text-sm font-semibold text-gray-900">${(ep.expectedRecovery * 12).toLocaleString()}</p>
                   </div>
                 </div>
 
-                <button className="mt-4 flex items-center gap-2 text-xs bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                <button className="mt-4 flex items-center gap-2 text-xs bg-blue-600 hover:bg-blue-500 text-gray-900 px-4 py-2 rounded-lg font-medium transition-colors">
                   <CheckCircle2 size={13} /> Mark as fixed
                   <ArrowRight size={13} className="ml-1" />
                 </button>

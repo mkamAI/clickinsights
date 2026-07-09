@@ -55,8 +55,8 @@ export default function Heatmap() {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-xl font-bold text-white">Heatmap</h1>
-        <p className="text-slate-500 text-sm mt-0.5">See where visitors click, move, and stop scrolling</p>
+        <h1 className="text-xl font-bold text-gray-900">Heatmap</h1>
+        <p className="text-gray-400 text-sm mt-0.5">See where visitors click, move, and stop scrolling</p>
       </div>
 
       {/* Controls */}
@@ -72,7 +72,7 @@ export default function Heatmap() {
               key={id}
               onClick={() => setMapType(id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-all ${
-                mapType === id ? 'bg-brand-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                mapType === id ? 'bg-blue-600 text-gray-900' : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               <Icon size={12} /> {label}
@@ -84,13 +84,13 @@ export default function Heatmap() {
         <select
           value={page}
           onChange={e => setPage(e.target.value)}
-          className="bg-surface-card border border-surface-border rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-brand-500"
+          className="bg-surface-card border border-surface-border rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-blue-500"
         >
           {pages.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
 
         {/* Legend */}
-        <div className="ml-auto flex items-center gap-3 text-xs text-slate-500">
+        <div className="ml-auto flex items-center gap-3 text-xs text-gray-400">
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-yellow-500 inline-block opacity-60" /> Low
           </span>
@@ -113,7 +113,7 @@ export default function Heatmap() {
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
             </div>
-            <div className="flex-1 bg-surface border border-surface-border rounded px-3 py-0.5 text-xs text-slate-500 mx-4">
+            <div className="flex-1 bg-surface border border-surface-border rounded px-3 py-0.5 text-xs text-gray-400 mx-4">
               mystore.com{page}
             </div>
           </div>
@@ -132,13 +132,13 @@ export default function Heatmap() {
                         borderTop: '1px solid rgba(99,102,241,0.3)',
                       }}
                     />
-                    <p className="text-[9px] text-slate-600 text-center py-1">{d.pct}%</p>
+                    <p className="text-[9px] text-gray-400 text-center py-1">{d.pct}%</p>
                   </div>
                 ))}
                 <div className="absolute inset-0 flex flex-col justify-around pointer-events-none px-4">
                   {['Hero section', 'Features', 'Pricing cards ← 58% drop-off', 'Social proof', 'CTA', 'Footer'].map((label, i) => (
                     <div key={i} className="border-t border-dashed border-surface-border/50 pt-1">
-                      <p className="text-[10px] text-slate-600">{label}</p>
+                      <p className="text-[10px] text-gray-400">{label}</p>
                     </div>
                   ))}
                 </div>
@@ -149,7 +149,7 @@ export default function Heatmap() {
                 <div className="absolute inset-0 flex flex-col gap-4 p-6 pointer-events-none opacity-20">
                   <div className="h-8 bg-slate-600 rounded w-2/3 mx-auto" />
                   <div className="h-4 bg-slate-700 rounded w-1/2 mx-auto" />
-                  <div className="h-10 bg-brand-600 rounded-lg w-40 mx-auto" />
+                  <div className="h-10 bg-blue-600 rounded-lg w-40 mx-auto" />
                   <div className="grid grid-cols-3 gap-3 mt-4">
                     {[1,2,3].map(i => <div key={i} className="h-32 bg-slate-700 rounded-lg" />)}
                   </div>
@@ -166,7 +166,7 @@ export default function Heatmap() {
                 {clickData.filter(d => d[2] > 0.5).map((d, i) => (
                   <div
                     key={i}
-                    className="absolute text-[10px] bg-surface-card border border-surface-border rounded px-1.5 py-0.5 text-slate-300 pointer-events-none"
+                    className="absolute text-[10px] bg-surface-card border border-surface-border rounded px-1.5 py-0.5 text-gray-700 pointer-events-none"
                     style={{ left: `${d[0]}%`, top: `${d[1] - 6}%`, transform: 'translate(-50%, -100%)' }}
                   >
                     {d[3]}
@@ -182,16 +182,16 @@ export default function Heatmap() {
           <div className="bg-surface-card border border-surface-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Flame size={15} className="text-red-400" />
-              <h3 className="text-sm font-semibold text-white">Top Interaction Zones</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Top Interaction Zones</h3>
             </div>
             <div className="space-y-2.5">
               {clickData.sort((a, b) => b[2] - a[2]).slice(0, 5).map((d, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <div className="w-4 text-xs text-slate-600 font-mono">{i + 1}</div>
+                  <div className="w-4 text-xs text-gray-400 font-mono">{i + 1}</div>
                   <div className="flex-1">
                     <div className="flex justify-between text-xs mb-0.5">
-                      <span className="text-slate-300">{d[3]}</span>
-                      <span className="text-slate-500">{Math.round(d[2] * 100)}%</span>
+                      <span className="text-gray-700">{d[3]}</span>
+                      <span className="text-gray-400">{Math.round(d[2] * 100)}%</span>
                     </div>
                     <div className="h-1 bg-surface-border rounded-full overflow-hidden">
                       <div
@@ -209,7 +209,7 @@ export default function Heatmap() {
           </div>
 
           <div className="bg-surface-card border border-surface-border rounded-xl p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-white">Insights</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Insights</h3>
             {[
               { label: 'Total clicks recorded', value: '14,820' },
               { label: 'Dead clicks', value: '2,341 (15.8%)' },
@@ -218,15 +218,15 @@ export default function Heatmap() {
               { label: 'Below-fold engagement', value: '34%' },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between text-xs border-b border-surface-border pb-2 last:border-0 last:pb-0">
-                <span className="text-slate-500">{label}</span>
+                <span className="text-gray-400">{label}</span>
                 <span className="text-slate-200 font-medium">{value}</span>
               </div>
             ))}
           </div>
 
-          <div className="bg-brand-600/10 border border-brand-500/20 rounded-xl p-4">
-            <p className="text-xs text-brand-300 font-semibold mb-1">AI Observation</p>
-            <p className="text-xs text-slate-400 leading-relaxed">
+          <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4">
+            <p className="text-xs text-blue-500 font-semibold mb-1">AI Observation</p>
+            <p className="text-xs text-gray-500 leading-relaxed">
               95% of clicks concentrate in the top 40% of the page. Visitors rarely scroll past pricing cards — consider moving your strongest CTA above the fold.
             </p>
           </div>

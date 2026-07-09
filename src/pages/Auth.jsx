@@ -43,22 +43,22 @@ export default function Auth() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 mb-4 glow-brand">
             <Zap size={22} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">ClickInsights<span className="text-brand-400">.AI</span></h1>
-          <p className="text-slate-500 text-sm mt-1">Know exactly why visitors leave</p>
+          <h1 className="text-2xl font-bold text-gray-900">ClickInsights<span className=".AI</span> is fine, keep as brand-400">.AI</span></h1>
+          <p className="text-gray-400 text-sm mt-1">Know exactly why visitors leave</p>
         </div>
 
         {/* Card */}
         <div className="bg-surface-card border border-surface-border rounded-2xl p-6">
           {/* Tabs */}
-          <div className="flex bg-surface rounded-lg p-1 mb-6">
+          <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
             {['login', 'signup'].map(t => (
               <button
                 key={t}
                 onClick={() => { setTab(t); setError(''); setSuccess('') }}
                 className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
                   tab === t
-                    ? 'bg-brand-600 text-white'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 {t === 'login' ? 'Sign in' : 'Create account'}
@@ -69,20 +69,20 @@ export default function Auth() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1.5 font-medium">Email</label>
+              <label className="block text-xs text-gray-500 mb-1.5 font-medium">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="you@company.com"
-                className="w-full bg-surface border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition-colors"
+                className="w-full bg-white border border-surface-border rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1.5 font-medium">Password</label>
+              <label className="block text-xs text-gray-500 mb-1.5 font-medium">Password</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -91,12 +91,12 @@ export default function Auth() {
                   required
                   minLength={6}
                   placeholder="••••••••"
-                  className="w-full bg-surface border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition-colors pr-10"
+                  className="w-full bg-white border border-surface-border rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
                 >
                   {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -122,7 +122,7 @@ export default function Auth() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-brand-600 hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
             >
               {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
               {tab === 'login' ? 'Sign in' : 'Create account'}
@@ -130,9 +130,9 @@ export default function Auth() {
           </form>
 
           {tab === 'login' && (
-            <p className="text-center text-xs text-slate-600 mt-4">
+            <p className="text-center text-xs text-gray-400 mt-4">
               Don't have an account?{' '}
-              <button onClick={() => setTab('signup')} className="text-brand-400 hover:text-brand-300">
+              <button onClick={() => setTab('signup')} className=".AI</span> is fine, keep as brand-400 hover:text-brand-300">
                 Sign up free
               </button>
             </p>

@@ -73,9 +73,9 @@ const effortConfig = {
 }
 
 const impactConfig = {
-  High: 'text-brand-400',
-  Medium: 'text-slate-400',
-  Low: 'text-slate-500',
+  High: 'text-blue-600',
+  Medium: 'text-gray-500',
+  Low: 'text-gray-400',
 }
 
 export default function AIDiagnosis() {
@@ -93,15 +93,15 @@ export default function AIDiagnosis() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Brain size={20} className="text-brand-400" />
+          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Brain size={20} className="text-blue-600" />
             AI Diagnosis
           </h1>
-          <p className="text-slate-500 text-sm mt-0.5">Root cause analysis for every exit point — updated daily</p>
+          <p className="text-gray-400 text-sm mt-0.5">Root cause analysis for every exit point — updated daily</p>
         </div>
-        <div className="flex items-center gap-2 text-xs bg-brand-600/10 border border-brand-500/20 rounded-lg px-3 py-2">
-          <Sparkles size={13} className="text-brand-400" />
-          <span className="text-brand-300">4 issues diagnosed · Last run 42 min ago</span>
+        <div className="flex items-center gap-2 text-xs bg-blue-600/10 border border-blue-500/20 rounded-lg px-3 py-2">
+          <Sparkles size={13} className="text-blue-600" />
+          <span className="text-blue-500">4 issues diagnosed · Last run 42 min ago</span>
         </div>
       </div>
 
@@ -111,11 +111,11 @@ export default function AIDiagnosis() {
           { label: 'Critical issues', value: 2, color: 'text-red-400' },
           { label: 'High priority', value: 2, color: 'text-orange-400' },
           { label: 'Quick wins', value: 6, color: 'text-emerald-400' },
-          { label: 'Fixes applied', value: fixed.size, color: 'text-brand-400' },
+          { label: 'Fixes applied', value: fixed.size, color: 'text-blue-600' },
         ].map(({ label, value, color }) => (
           <div key={label} className="bg-surface-card border border-surface-border rounded-xl px-4 py-3">
             <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{label}</p>
           </div>
         ))}
       </div>
@@ -137,33 +137,33 @@ export default function AIDiagnosis() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-white">{d.label}</p>
+                    <p className="text-sm font-semibold text-gray-900">{d.label}</p>
                     <span className={`text-xs px-2 py-0.5 rounded border font-medium ${cfg.bg} ${cfg.color}`}>
                       {d.severity}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5 truncate">{d.rootCause}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">{d.rootCause}</p>
                 </div>
 
                 <div className="hidden md:flex items-center gap-6 flex-shrink-0">
                   <div className="text-right">
-                    <p className="text-xs text-slate-500 mb-0.5">AI Confidence</p>
+                    <p className="text-xs text-gray-400 mb-0.5">AI Confidence</p>
                     <div className="flex items-center gap-2">
                       <div className="w-20 h-1.5 bg-surface-border rounded-full overflow-hidden">
                         <div className="h-full bg-brand-500 rounded-full" style={{ width: `${d.confidence}%` }} />
                       </div>
-                      <span className="text-xs text-brand-400 font-medium">{d.confidence}%</span>
+                      <span className="text-xs text-blue-600 font-medium">{d.confidence}%</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-slate-500 mb-0.5">Fixes</p>
-                    <p className="text-sm font-medium text-white">{d.fixes.length} suggested</p>
+                    <p className="text-xs text-gray-400 mb-0.5">Fixes</p>
+                    <p className="text-sm font-medium text-gray-900">{d.fixes.length} suggested</p>
                   </div>
                 </div>
 
                 <ChevronDown
                   size={16}
-                  className={`text-slate-500 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                  className={`text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                 />
               </button>
 
@@ -173,20 +173,20 @@ export default function AIDiagnosis() {
                   {/* Detail */}
                   <div className="px-5 py-4 bg-surface/30">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="w-7 h-7 rounded-lg bg-brand-600/20 border border-brand-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Brain size={13} className="text-brand-400" />
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Brain size={13} className="text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-brand-400 font-semibold mb-1 uppercase tracking-wider">Root Cause Analysis</p>
-                        <p className="text-sm text-slate-300 leading-relaxed">{d.detail}</p>
+                        <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">Root Cause Analysis</p>
+                        <p className="text-sm text-gray-700 leading-relaxed">{d.detail}</p>
                       </div>
                     </div>
 
                     {/* Patterns */}
                     <div className="flex items-center gap-3 flex-wrap ml-10">
                       {d.patterns.map((p, pi) => (
-                        <span key={pi} className="text-xs text-slate-500 bg-surface border border-surface-border rounded px-2 py-1 flex items-center gap-1">
-                          <TrendingUp size={10} className="text-slate-600" /> {p}
+                        <span key={pi} className="text-xs text-gray-400 bg-surface border border-surface-border rounded px-2 py-1 flex items-center gap-1">
+                          <TrendingUp size={10} className="text-gray-400" /> {p}
                         </span>
                       ))}
                     </div>
@@ -195,8 +195,8 @@ export default function AIDiagnosis() {
                   {/* Fixes */}
                   <div className="px-5 py-4 border-t border-surface-border">
                     <div className="flex items-center gap-2 mb-3">
-                      <Zap size={14} className="text-brand-400" />
-                      <p className="text-xs font-semibold text-white uppercase tracking-wider">Suggested Fixes</p>
+                      <Zap size={14} className="text-blue-600" />
+                      <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">Suggested Fixes</p>
                     </div>
                     <div className="space-y-2">
                       {d.fixes.map((fix, fi) => {
@@ -208,15 +208,15 @@ export default function AIDiagnosis() {
                             onClick={() => toggleFix(key)}
                             className={`flex items-start gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${
                               isDone
-                                ? 'bg-emerald-500/10 border-emerald-500/20'
+                                ? 'bg-emerald-50 border-emerald-200'
                                 : 'bg-surface border-surface-border hover:bg-surface-hover'
                             }`}
                           >
                             {isDone
                               ? <CheckCircle2 size={15} className="text-emerald-400 flex-shrink-0 mt-0.5" />
-                              : <Circle size={15} className="text-slate-600 flex-shrink-0 mt-0.5" />}
+                              : <Circle size={15} className="text-gray-400 flex-shrink-0 mt-0.5" />}
                             <div className="flex-1">
-                              <p className={`text-sm ${isDone ? 'line-through text-slate-500' : 'text-slate-200'}`}>
+                              <p className={`text-sm ${isDone ? 'line-through text-gray-400' : 'text-slate-200'}`}>
                                 {fix.label}
                               </p>
                               <div className="flex items-center gap-2 mt-1">
@@ -226,7 +226,7 @@ export default function AIDiagnosis() {
                                 <span className={`text-xs font-medium ${impactConfig[fix.impact]}`}>
                                   {fix.impact} impact
                                 </span>
-                                <span className="text-xs text-slate-600">
+                                <span className="text-xs text-gray-400">
                                   ~{fix.days < 1 ? `${fix.days * 8}h` : `${fix.days}d`}
                                 </span>
                               </div>
