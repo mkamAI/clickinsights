@@ -1,40 +1,69 @@
 /**
  * Vercel Serverless Function — POST /api/create-checkout-session
- * Creates a Stripe Checkout session for plan upgrades.
+ * Creates a LemonSqueezy checkout URL for plan upgrades.
  */
-import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-const PLANS = {
-  pro: process.env.STRIPE_PRICE_PRO,         // $59/mo
-  business: process.env.STRIPE_PRICE_BUSINESS, // $149/mo
-};
+const VARIANTS = {
+  pro:      process.env.LEMONSQUEEZY_VARIANT_PRO,      // 1890909
+  business: process.env.LEMONSQUEEZY_VARIANT_BUSINESS, // 1890911
+}
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).end();
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  if (req.method === 'OPTIONS') return res.status(200).end()
+  if (req.method !== 'POST') return res.status(405).end()
 
   try {
-    const { plan, userId, email } = req.body;
+    const { plan, userId, email } = req.body
 
-    if (!PLANS[plan]) return res.status(400).json({ error: 'Invalid plan' });
+    const variantId = VARIANTS[plan]
+    if (!variantId) return res.status(400).json({ error: 'Invalid plan' })
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      customer_email: email,
-      line_items: [{ price: PLANS[plan], quantity: 1 }],
-      metadata: { userId },
-      success_url: `${process.env.VITE_APP_URL}/billing?success=true`,
-      cancel_url: `${process.env.VITE_APP_URL}/billing?cancelled=true`,
-    });
+    const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.api+json',
+        'Content-Type': 'application/vnd.api+json',
+        'Authorization': `Bearer ${process.env.LEMONSQUEEZY_API_KEY}`,
+      },
+      body: JSON.stringify({
+        data: {
+          type: 'checkouts',
+          attributes: {
+            checkout_data: {
+              email,
+              custom: { user_id: userId },
+            },
+            product_options: {
+              redirect_url: `${process.env.VITE_APP_URL}/app/billing?success=true`,
+            },
+          },
+          relationships: {
+            store: {
+              data: { type: 'stores', id: String(process.env.LEMONSQUEEZY_STORE_ID) },
+            },
+            variant: {
+              data: { type: 'variants', id: String(variantId) },
+            },
+          },
+        },
+      }),
+    })
 
-    return res.status(200).json({ url: session.url });
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('[checkout] LemonSqueezy error:', data)
+      return res.status(500).json({ error: data?.errors?.[0]?.detail || 'Checkout creation failed' })
+    }
+
+    const checkoutUrl = data?.data?.attributes?.url
+    if (!checkoutUrl) return res.status(500).json({ error: 'No checkout URL returned' })
+
+    return res.status(200).json({ url: checkoutUrl })
   } catch (err) {
-    console.error('[checkout]', err);
-    return res.status(500).json({ error: err.message });
+    console.error('[checkout]', err)
+    return res.status(500).json({ error: err.message })
   }
 }
