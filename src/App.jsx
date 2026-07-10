@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { SiteProvider } from './context/SiteContext'
 import Layout from './components/layout/Layout'
 import Landing from './pages/Landing'
 import Auth from './pages/Auth'
@@ -10,6 +11,7 @@ import Heatmap from './pages/Heatmap'
 import AIDiagnosis from './pages/AIDiagnosis'
 import Funnels from './pages/Funnels'
 import Billing from './pages/Billing'
+import Settings from './pages/Settings'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -32,7 +34,13 @@ function AppRoutes() {
       <Route path="/auth" element={user ? <Navigate to="/app" replace /> : <Auth />} />
 
       {/* Protected app */}
-      <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+      <Route path="/app" element={
+        <ProtectedRoute>
+          <SiteProvider>
+            <Layout />
+          </SiteProvider>
+        </ProtectedRoute>
+      }>
         <Route index element={<Dashboard />} />
         <Route path="revenue" element={<RevenueImpact />} />
         <Route path="sessions" element={<Sessions />} />
@@ -40,6 +48,7 @@ function AppRoutes() {
         <Route path="diagnosis" element={<AIDiagnosis />} />
         <Route path="funnels" element={<Funnels />} />
         <Route path="billing" element={<Billing />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       {/* Catch-all */}
