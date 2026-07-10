@@ -1,143 +1,160 @@
-import { useState } from 'react'
-import { Play, Monitor, Smartphone, Globe, Clock, TrendingDown, Search, Filter } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Monitor, Smartphone, Globe, Clock, Loader2, Zap } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { useSite } from '../context/SiteContext'
 
-const sessions = [
-  { id: 's001', country: '🇺🇸', device: 'desktop', duration: '4m 12s', pages: 7, exitPage: '/pricing', score: 84, exitReason: 'Price shock', time: '2 min ago', rage: true },
-  { id: 's002', country: '🇬🇧', device: 'mobile', duration: '1m 44s', pages: 3, exitPage: '/checkout/step-2', score: 71, exitReason: 'Form friction', time: '5 min ago', rage: true },
-  { id: 's003', country: '🇩🇪', device: 'desktop', duration: '6m 30s', pages: 11, exitPage: '/product/pro-plan', score: 62, exitReason: 'No social proof', time: '9 min ago', rage: false },
-  { id: 's004', country: '🇨🇦', device: 'mobile', duration: '0m 52s', pages: 2, exitPage: '/', score: 91, exitReason: 'Message mismatch', time: '14 min ago', rage: false },
-  { id: 's005', country: '🇫🇷', device: 'desktop', duration: '3m 08s', pages: 5, exitPage: '/signup', score: 77, exitReason: 'Form too long', time: '18 min ago', rage: true },
-  { id: 's006', country: '🇦🇺', device: 'tablet', duration: '2m 19s', pages: 4, exitPage: '/pricing', score: 55, exitReason: 'Price shock', time: '22 min ago', rage: false },
-  { id: 's007', country: '🇳🇱', device: 'desktop', duration: '5m 41s', pages: 9, exitPage: '/product/pro-plan', score: 68, exitReason: 'Slow page load', time: '31 min ago', rage: true },
-  { id: 's008', country: '🇧🇷', device: 'mobile', duration: '1m 03s', pages: 2, exitPage: '/signup', score: 82, exitReason: 'Form too long', time: '45 min ago', rage: false },
-]
-
-const scoreColor = (s) => {
-  if (s >= 80) return 'text-red-400'
-  if (s >= 60) return 'text-orange-400'
-  return 'text-yellow-400'
+function deviceIcon(device) {
+  if (!device) return <Monitor size={14} />
+  if (/mobile|android|iphone/i.test(device)) return <Smartphone size={14} />
+  return <Monitor size={14} />
 }
 
-const scoreBg = (s) => {
-  if (s >= 80) return 'bg-red-50 border-red-200'
-  if (s >= 60) return 'bg-orange-500/10 border-orange-500/20'
-  return 'bg-yellow-500/10 border-yellow-500/20'
+function timeAgo(ts) {
+  const diff = Math.floor((Date.now() - new Date(ts)) / 1000)
+  if (diff < 60) return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
+}
+
+function fmtDuration(ms) {
+  if (!ms || ms < 1000) return '< 1s'
+  const s = Math.floor(ms / 1000)
+  if (s < 60) return `${s}s`
+  return `${Math.floor(s / 60)}m ${s % 60}s`
+}
+
+function EmptyState({ noSite }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <Globe size={32} className="text-gray-300 mb-4" />
+      <p className="text-gray-500 text-sm">
+        {noSite ? 'Select a site to view sessions.' : 'No sessions yet. Install the tracker and visit your site.'}
+      </p>
+    </div>
+  )
 }
 
 export default function Sessions() {
+  const { currentSite } = useSite()
+  const [sessions, setSessions] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [deviceFilter, setDeviceFilter] = useState('all')
 
-  const filtered = sessions.filter(s => {
-    const matchSearch = s.exitPage.includes(search) || s.exitReason.toLowerCase().includes(search.toLowerCase())
-    const matchDevice = deviceFilter === 'all' || s.device === deviceFilter
-    return matchSearch && matchDevice
-  })
+  useEffect(() => {
+    if (!currentSite) { setLoading(false); return }
+    fetchSessions()
+  }, [currentSite])
+
+  async function fetchSessions() {
+    setLoading(true)
+    const since = new Date()
+    since.setDate(since.getDate() - 7)
+
+    const { data, error } = await supabase
+      .from('events')
+      .select('session_id, type, url, occurred_at, device, time_on_page, rage_click')
+      .eq('site_id', currentSite.id)
+      .gte('occurred_at', since.toISOString())
+      .order('occurred_at', { ascending: true })
+
+    if (!error && data) {
+      const map = {}
+      data.forEach(e => {
+        if (!map[e.session_id]) {
+          map[e.session_id] = {
+            id: e.session_id,
+            device: e.device || 'Unknown',
+            pages: new Set(),
+            exitPage: null,
+            lastSeen: e.occurred_at,
+            duration: 0,
+            rageClicks: 0,
+          }
+        }
+        const s = map[e.session_id]
+        if (e.url) { try { s.pages.add(new URL(e.url).pathname) } catch { s.pages.add(e.url) } }
+        if (e.type === 'exit' && e.url) { try { s.exitPage = new URL(e.url).pathname } catch { s.exitPage = e.url } }
+        if (new Date(e.occurred_at) > new Date(s.lastSeen)) s.lastSeen = e.occurred_at
+        if (e.time_on_page) s.duration += e.time_on_page
+        if (e.rage_click) s.rageClicks++
+      })
+
+      setSessions(
+        Object.values(map)
+          .sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen))
+          .map(s => ({ ...s, pageCount: s.pages.size }))
+      )
+    }
+    setLoading(false)
+  }
+
+  const filtered = sessions.filter(s =>
+    !search ||
+    s.id.includes(search) ||
+    (s.exitPage || '').includes(search) ||
+    (s.device || '').toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Session Recordings</h1>
-        <p className="text-gray-400 text-sm mt-0.5">Watch exactly what visitors did before leaving</p>
+    <div className="p-6 space-y-5 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Sessions</h1>
+          <p className="text-gray-400 text-sm mt-0.5">{currentSite?.domain} · last 7 days</p>
+        </div>
+        <input
+          type="text"
+          placeholder="Search sessions…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="text-sm border border-gray-200 rounded-lg px-3 py-2 w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search exit page or reason..."
-            className="w-full bg-surface-card border border-surface-border rounded-lg pl-8 pr-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div className="flex items-center gap-1 bg-surface-card border border-surface-border rounded-lg p-1">
-          {['all', 'desktop', 'mobile', 'tablet'].map(d => (
-            <button
-              key={d}
-              onClick={() => setDeviceFilter(d)}
-              className={`px-3 py-1.5 text-xs rounded-md capitalize transition-all ${
-                deviceFilter === d ? 'bg-blue-600 text-gray-900' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-        <button className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-500 bg-surface-card border border-surface-border rounded-lg hover:text-gray-900">
-          <Filter size={13} /> Filter
-        </button>
-      </div>
-
-      {/* Session list */}
-      <div className="space-y-2">
-        {filtered.map((s) => (
-          <div key={s.id} className="bg-surface-card border border-surface-border rounded-xl px-5 py-4 hover:bg-surface-hover transition-colors group">
-            <div className="flex items-center gap-4">
-              {/* Play button */}
-              <button className="w-9 h-9 rounded-full bg-blue-50 border border-blue-500/30 flex items-center justify-center group-hover:bg-blue-600/40 transition-colors flex-shrink-0">
-                <Play size={14} className="text-blue-600 ml-0.5" />
-              </button>
-
-              {/* Meta */}
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <span className="text-lg">{s.country}</span>
-                {s.device === 'desktop'
-                  ? <Monitor size={14} className="text-gray-400" />
-                  : s.device === 'mobile'
-                  ? <Smartphone size={14} className="text-gray-400" />
-                  : <Globe size={14} className="text-gray-400" />}
-              </div>
-
-              {/* Session info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 font-mono">{s.id}</span>
-                  {s.rage && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 border border-red-500/20 text-red-400 font-medium">
-                      RAGE CLICKS
+      {loading ? (
+        <div className="flex justify-center py-24"><Loader2 size={28} className="text-blue-500 animate-spin" /></div>
+      ) : !currentSite || sessions.length === 0 ? (
+        <EmptyState noSite={!currentSite} />
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {['Session', 'Device', 'Pages', 'Duration', 'Exit Page', 'Rage Clicks', 'Last Seen'].map(h => (
+                  <th key={h} className="text-left text-xs text-gray-400 font-medium px-5 py-3">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(s => (
+                <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-400">{s.id.slice(0, 8)}…</td>
+                  <td className="px-5 py-3.5">
+                    <span className="flex items-center gap-1.5 text-xs text-gray-600">
+                      {deviceIcon(s.device)}{s.device.split(' ')[0]}
                     </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-4 mt-1 text-xs text-gray-400">
-                  <span className="flex items-center gap-1"><Clock size={11} /> {s.duration}</span>
-                  <span>{s.pages} pages visited</span>
-                  <span className="text-gray-400">exited: <span className="text-gray-500 font-mono">{s.exitPage}</span></span>
-                </div>
-              </div>
-
-              {/* Exit reason */}
-              <div className="hidden md:block text-right flex-shrink-0">
-                <p className="text-xs text-gray-400 mb-0.5">Exit reason</p>
-                <p className="text-xs font-medium text-gray-700">{s.exitReason}</p>
-              </div>
-
-              {/* Intent score */}
-              <div className={`flex-shrink-0 w-16 h-16 rounded-xl border flex flex-col items-center justify-center ${scoreBg(s.score)}`}>
-                <TrendingDown size={12} className={scoreColor(s.score)} />
-                <p className={`text-lg font-bold ${scoreColor(s.score)}`}>{s.score}</p>
-                <p className="text-[9px] text-gray-400">exit risk</p>
-              </div>
-
-              {/* Time */}
-              <div className="text-xs text-gray-400 flex-shrink-0 w-16 text-right">{s.time}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="text-center py-12 text-gray-400">
-          No sessions match your filters
+                  </td>
+                  <td className="px-5 py-3.5 text-sm text-gray-700">{s.pageCount}</td>
+                  <td className="px-5 py-3.5 text-xs text-gray-600">
+                    <span className="flex items-center gap-1"><Clock size={11} />{fmtDuration(s.duration)}</span>
+                  </td>
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-500">{s.exitPage || '—'}</td>
+                  <td className="px-5 py-3.5">
+                    {s.rageClicks > 0
+                      ? <span className="flex items-center gap-1 text-xs text-red-500 font-medium"><Zap size={11} />{s.rageClicks}</span>
+                      : <span className="text-xs text-gray-300">—</span>}
+                  </td>
+                  <td className="px-5 py-3.5 text-xs text-gray-400">{timeAgo(s.lastSeen)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filtered.length === 0 && (
+            <p className="text-center text-sm text-gray-400 py-8">No sessions match your search.</p>
+          )}
         </div>
       )}
-
-      <div className="text-center">
-        <button className="text-xs text-blue-600 hover:text-blue-500 px-4 py-2 border border-blue-500/20 rounded-lg">
-          Load more sessions
-        </button>
-      </div>
     </div>
   )
 }

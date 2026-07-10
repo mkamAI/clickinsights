@@ -1,248 +1,260 @@
-import { useState } from 'react'
-import { DollarSign, TrendingDown, Zap, ChevronRight, CheckCircle2, ArrowRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { DollarSign, TrendingDown, Zap, CheckCircle2, Loader2, Settings2 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { useSite } from '../context/SiteContext'
 
-const exitPoints = [
-  {
-    page: '/pricing',
-    label: 'Pricing Page',
-    visitors: 4820,
-    exitRate: 67,
-    lostMRR: 14200,
-    lostARR: 170400,
-    effort: 'Quick win',
-    effortColor: 'text-emerald-400 bg-emerald-50 border-emerald-200',
-    fix: 'Add a mid-tier plan between Pro ($49) and Enterprise ($299). The pricing jump causes anchor shock — 72% of exits happen within 8s of landing on this page.',
-    expectedRecovery: 4260,
-    recoveryPct: 30,
-    severity: 'critical',
-    trend: '+12% this week',
-  },
-  {
-    page: '/checkout/step-2',
-    label: 'Checkout Step 2',
-    visitors: 2940,
-    exitRate: 54,
-    lostMRR: 11800,
-    lostARR: 141600,
-    effort: 'Quick win',
-    effortColor: 'text-emerald-400 bg-emerald-50 border-emerald-200',
-    fix: `Remove the "Company VAT number" required field. It's blocking 68% of individual buyers. Move billing fields to after payment intent is captured.`,
-    expectedRecovery: 4720,
-    recoveryPct: 40,
-    severity: 'critical',
-    trend: '+8% this week',
-  },
-  {
-    page: '/product/pro-plan',
-    label: 'Pro Plan Page',
-    visitors: 3110,
-    exitRate: 45,
-    lostMRR: 8900,
-    lostARR: 106800,
-    effort: 'Medium',
-    effortColor: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
-    fix: 'Add social proof near the CTA — session data shows visitors scroll past the features list and immediately look below the fold for reviews before exiting.',
-    expectedRecovery: 2670,
-    recoveryPct: 30,
-    severity: 'high',
-    trend: '-3% this week',
-  },
-  {
-    page: '/signup',
-    label: 'Sign-up Form',
-    visitors: 1870,
-    exitRate: 38,
-    lostMRR: 7100,
-    lostARR: 85200,
-    effort: 'Quick win',
-    effortColor: 'text-emerald-400 bg-emerald-50 border-emerald-200',
-    fix: 'Reduce form from 7 fields to 3 (email + password only). Every additional field costs ~8% conversion. Current form is the #1 mobile drop-off point.',
-    expectedRecovery: 2840,
-    recoveryPct: 40,
-    severity: 'high',
-    trend: '+5% this week',
-  },
-  {
-    page: '/',
-    label: 'Homepage Hero',
-    visitors: 6240,
-    exitRate: 31,
-    lostMRR: 5230,
-    lostARR: 62760,
-    effort: 'Major rebuild',
-    effortColor: 'text-red-400 bg-red-50 border-red-200',
-    fix: 'Hero headline is too generic. Visitors from paid ads bounce because the message doesn\'t match ad copy. Personalize headline by traffic source.',
-    expectedRecovery: 1569,
-    recoveryPct: 30,
-    severity: 'medium',
-    trend: '-1% this week',
-  },
-]
+const severityColor = {
+  critical: 'text-red-600 bg-red-50 border-red-200',
+  high: 'text-orange-600 bg-orange-50 border-orange-200',
+  medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+  low: 'text-gray-500 bg-gray-50 border-gray-200',
+}
 
-const totalLostMRR = exitPoints.reduce((s, e) => s + e.lostMRR, 0)
-const totalRecoverable = exitPoints.reduce((s, e) => s + e.expectedRecovery, 0)
+function getSeverity(rate) {
+  if (rate >= 60) return 'critical'
+  if (rate >= 45) return 'high'
+  if (rate >= 30) return 'medium'
+  return 'low'
+}
+
+function fmt(n) { return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n}` }
 
 export default function RevenueImpact() {
-  const [expanded, setExpanded] = useState(null)
-  const [roiConversion, setRoiConversion] = useState(30)
+  const { currentSite } = useSite()
+  const [exitPoints, setExitPoints] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState(null)
+  const [mrr, setMrr] = useState(() => Number(localStorage.getItem('ci_mrr') || 5000))
+  const [showMrrInput, setShowMrrInput] = useState(false)
+  const [mrrDraft, setMrrDraft] = useState('')
 
-  const estimated = Math.round(totalLostMRR * (roiConversion / 100))
+  useEffect(() => {
+    if (!currentSite) { setLoading(false); return }
+    fetchData()
+  }, [currentSite])
+
+  async function fetchData() {
+    setLoading(true)
+    const since = new Date()
+    since.setDate(since.getDate() - 30)
+
+    const { data, error } = await supabase
+      .from('events')
+      .select('type, url, session_id')
+      .eq('site_id', currentSite.id)
+      .gte('occurred_at', since.toISOString())
+
+    if (!error && data) {
+      const pageviews = data.filter(e => e.type === 'pageview')
+      const exits = data.filter(e => e.type === 'exit')
+
+      const pageStats = {}
+      pageviews.forEach(e => {
+        const path = e.url ? (() => { try { return new URL(e.url).pathname } catch { return e.url } })() : '/'
+        if (!pageStats[path]) pageStats[path] = { pageviews: 0, exits: 0, sessions: new Set() }
+        pageStats[path].pageviews++
+        pageStats[path].sessions.add(e.session_id)
+      })
+      exits.forEach(e => {
+        const path = e.url ? (() => { try { return new URL(e.url).pathname } catch { return e.url } })() : '/'
+        if (pageStats[path]) pageStats[path].exits++
+      })
+
+      const totalSessions = new Set(data.map(e => e.session_id)).size
+      const revenuePerSession = totalSessions > 0 ? mrr / totalSessions : 0
+
+      const points = Object.entries(pageStats)
+        .filter(([, s]) => s.pageviews >= 2)
+        .map(([page, s]) => {
+          const rate = Math.round((s.exits / s.pageviews) * 100)
+          const lostSessions = Math.round(s.sessions.size * (rate / 100))
+          const lostMRR = Math.round(lostSessions * revenuePerSession)
+          return {
+            page,
+            visitors: s.sessions.size,
+            exitRate: rate,
+            lostMRR,
+            lostARR: lostMRR * 12,
+            severity: getSeverity(rate),
+          }
+        })
+        .filter(p => p.exitRate > 0)
+        .sort((a, b) => b.lostMRR - a.lostMRR)
+        .slice(0, 8)
+
+      setExitPoints(points)
+      if (points.length > 0) setSelected(points[0].page)
+    }
+    setLoading(false)
+  }
+
+  function saveMrr() {
+    const val = parseInt(mrrDraft)
+    if (val > 0) {
+      setMrr(val)
+      localStorage.setItem('ci_mrr', val)
+    }
+    setShowMrrInput(false)
+    fetchData()
+  }
+
+  const totalLostMRR = exitPoints.reduce((s, p) => s + p.lostMRR, 0)
+  const totalLostARR = totalLostMRR * 12
+  const selectedPoint = exitPoints.find(p => p.page === selected)
+
+  if (!currentSite || (!loading && exitPoints.length === 0)) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center py-24 text-center">
+        <DollarSign size={32} className="text-gray-300 mb-4" />
+        <p className="text-gray-500 text-sm">
+          {!currentSite ? 'Select a site to view revenue impact.' : 'Not enough data yet. Keep the tracker running and check back soon.'}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Revenue Impact</h1>
-        <p className="text-gray-400 text-sm mt-0.5">AI-calculated revenue leaks across your funnel</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Revenue Impact</h1>
+          <p className="text-gray-400 text-sm mt-0.5">{currentSite?.domain} · last 30 days</p>
+        </div>
+        <button
+          onClick={() => { setMrrDraft(String(mrr)); setShowMrrInput(v => !v) }}
+          className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <Settings2 size={14} /> MRR: ${mrr.toLocaleString()}
+        </button>
       </div>
 
-      {/* Banner */}
-      <div className="relative bg-gradient-to-r from-red-900/40 to-red-800/20 border border-red-500/30 rounded-2xl p-6 overflow-hidden glow-red">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Total MRR at Risk</p>
-            <p className="text-4xl font-bold text-gray-900">${totalLostMRR.toLocaleString()}</p>
-            <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
-              <TrendingDown size={13} /> +$3,200 vs last month
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Projected ARR Loss</p>
-            <p className="text-4xl font-bold text-gray-900">${(totalLostMRR * 12).toLocaleString()}</p>
-            <p className="text-gray-400 text-sm mt-1">if nothing changes</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Quick-Win Recovery</p>
-            <p className="text-4xl font-bold text-emerald-400">${totalRecoverable.toLocaleString()}/mo</p>
-            <p className="text-gray-400 text-sm mt-1">from top 4 fixes (2 weeks)</p>
-          </div>
+      {showMrrInput && (
+        <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+          <span className="text-sm text-gray-600">Your current MRR ($):</span>
+          <input
+            type="number"
+            value={mrrDraft}
+            onChange={e => setMrrDraft(e.target.value)}
+            className="w-32 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="5000"
+          />
+          <button onClick={saveMrr} className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">
+            Save
+          </button>
+          <span className="text-xs text-gray-400">Used to estimate revenue at risk per exit</span>
         </div>
-      </div>
+      )}
 
-      {/* ROI Calculator */}
-      <div className="bg-surface-card border border-surface-border rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap size={16} className="text-blue-600" />
-          <h2 className="text-sm font-semibold text-gray-900">Recovery Simulator</h2>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex-1">
-            <div className="flex justify-between text-xs text-gray-500 mb-2">
-              <span>If you recover this % of lost revenue</span>
-              <span className="text-gray-900 font-semibold">{roiConversion}%</span>
+      {loading ? (
+        <div className="flex justify-center py-24"><Loader2 size={28} className="text-blue-500 animate-spin" /></div>
+      ) : (
+        <>
+          {/* Summary */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-red-50 border border-red-100 rounded-xl p-5">
+              <p className="text-xs text-red-400 font-medium mb-1">MRR at Risk</p>
+              <p className="text-3xl font-bold text-red-600">{fmt(totalLostMRR)}</p>
+              <p className="text-xs text-red-400 mt-1">from exit page drop-off</p>
             </div>
-            <input
-              type="range"
-              min={5}
-              max={80}
-              value={roiConversion}
-              onChange={e => setRoiConversion(+e.target.value)}
-              className="w-full accent-brand-500 h-1.5 cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>5%</span><span>80%</span>
+            <div className="bg-orange-50 border border-orange-100 rounded-xl p-5">
+              <p className="text-xs text-orange-400 font-medium mb-1">ARR at Risk</p>
+              <p className="text-3xl font-bold text-orange-600">{fmt(totalLostARR)}</p>
+              <p className="text-xs text-orange-400 mt-1">annualised</p>
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
+              <p className="text-xs text-blue-400 font-medium mb-1">Exit Points</p>
+              <p className="text-3xl font-bold text-blue-600">{exitPoints.length}</p>
+              <p className="text-xs text-blue-400 mt-1">pages leaking revenue</p>
             </div>
           </div>
-          <div className="text-right flex-shrink-0">
-            <p className="text-xs text-gray-400 mb-0.5">Monthly recovery</p>
-            <p className="text-2xl font-bold text-emerald-400">${estimated.toLocaleString()}</p>
-            <p className="text-xs text-gray-400">${(estimated * 12).toLocaleString()}/yr ARR</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Exit points */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-900 px-1">Exit Points — AI Diagnosed</h2>
-        {exitPoints.map((ep, i) => (
-          <div
-            key={i}
-            className="bg-surface-card border border-surface-border rounded-xl overflow-hidden"
-          >
-            {/* Row */}
-            <button
-              onClick={() => setExpanded(expanded === i ? null : i)}
-              className="w-full flex items-center gap-4 px-5 py-4 hover:bg-surface-hover transition-colors text-left"
-            >
-              {/* Severity dot */}
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                ep.severity === 'critical' ? 'bg-red-500' :
-                ep.severity === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
-              }`} />
-
-              {/* Page */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">{ep.label}</p>
-                <p className="text-xs text-gray-400 font-mono">{ep.page}</p>
-              </div>
-
-              {/* Stats */}
-              <div className="hidden md:flex items-center gap-8 text-sm">
-                <div className="text-center">
-                  <p className="text-gray-900 font-medium">{ep.visitors.toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">visitors</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-red-400 font-bold">{ep.exitRate}%</p>
-                  <p className="text-xs text-gray-400">exit rate</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-red-400 font-bold">${ep.lostMRR.toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">lost/mo</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-emerald-400 font-bold">+${ep.expectedRecovery.toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">recoverable</p>
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded border font-medium ${ep.effortColor}`}>
-                  {ep.effort}
-                </span>
-              </div>
-
-              <ChevronRight
-                size={16}
-                className={`text-gray-400 flex-shrink-0 transition-transform ${expanded === i ? 'rotate-90' : ''}`}
-              />
-            </button>
-
-            {/* Expanded AI diagnosis */}
-            {expanded === i && (
-              <div className="border-t border-surface-border bg-surface/50 px-5 py-4">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Zap size={13} className="text-blue-600" />
+          {/* Exit points list + detail */}
+          <div className="grid grid-cols-5 gap-4">
+            {/* List */}
+            <div className="col-span-2 space-y-2">
+              {exitPoints.map(p => (
+                <button
+                  key={p.page}
+                  onClick={() => setSelected(p.page)}
+                  className={`w-full text-left rounded-xl border p-4 transition-all ${
+                    selected === p.page
+                      ? 'border-blue-300 bg-blue-50 shadow-sm'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs px-2 py-0.5 rounded border font-medium ${severityColor[p.severity]}`}>
+                      {p.severity}
+                    </span>
+                    <span className="text-xs text-gray-400">{p.exitRate}% exit</span>
                   </div>
-                  <div>
-                    <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">AI Diagnosis</p>
-                    <p className="text-sm text-gray-700 leading-relaxed">{ep.fix}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2.5">
-                    <p className="text-xs text-gray-400 mb-0.5">Exit trend</p>
-                    <p className="text-sm font-semibold text-red-400">{ep.trend}</p>
-                  </div>
-                  <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2.5">
-                    <p className="text-xs text-gray-400 mb-0.5">If fixed, recover</p>
-                    <p className="text-sm font-semibold text-emerald-400">+${ep.expectedRecovery.toLocaleString()}/mo</p>
-                  </div>
-                  <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2.5">
-                    <p className="text-xs text-gray-400 mb-0.5">ARR upside</p>
-                    <p className="text-sm font-semibold text-gray-900">${(ep.expectedRecovery * 12).toLocaleString()}</p>
-                  </div>
-                </div>
-
-                <button className="mt-4 flex items-center gap-2 text-xs bg-blue-600 hover:bg-blue-500 text-gray-900 px-4 py-2 rounded-lg font-medium transition-colors">
-                  <CheckCircle2 size={13} /> Mark as fixed
-                  <ArrowRight size={13} className="ml-1" />
+                  <p className="text-sm font-mono text-gray-700 truncate">{p.page}</p>
+                  <p className="text-xs text-gray-400 mt-1">{fmt(p.lostMRR)}/mo at risk</p>
                 </button>
+              ))}
+            </div>
+
+            {/* Detail */}
+            {selectedPoint && (
+              <div className="col-span-3 bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-xs px-2 py-0.5 rounded border font-medium ${severityColor[selectedPoint.severity]}`}>
+                      {selectedPoint.severity}
+                    </span>
+                    <TrendingDown size={16} className="text-red-400" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900 font-mono">{selectedPoint.page}</h2>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-400">Visitors</p>
+                    <p className="text-xl font-bold text-gray-900">{selectedPoint.visitors.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-400">Exit Rate</p>
+                    <p className="text-xl font-bold text-red-500">{selectedPoint.exitRate}%</p>
+                  </div>
+                  <div className="bg-red-50 rounded-lg p-3">
+                    <p className="text-xs text-red-400">Lost MRR</p>
+                    <p className="text-xl font-bold text-red-600">{fmt(selectedPoint.lostMRR)}</p>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap size={14} className="text-amber-500" />
+                    <span className="text-xs font-semibold text-amber-700">What this means</span>
+                  </div>
+                  <p className="text-sm text-amber-800">
+                    {selectedPoint.exitRate}% of visitors who reach <span className="font-mono font-medium">{selectedPoint.page}</span> leave without converting.
+                    Based on your MRR of ${mrr.toLocaleString()}, this page is costing you approximately <strong>{fmt(selectedPoint.lostMRR)}/month</strong>.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Suggested actions</p>
+                  <ul className="space-y-2">
+                    {[
+                      'Add social proof (testimonials, logos) near the exit zone',
+                      'Simplify the page — reduce friction and cognitive load',
+                      'A/B test your headline and primary CTA',
+                      'Add a chat widget or exit-intent popup',
+                    ].map((tip, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                        <CheckCircle2 size={14} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             )}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   )
 }
