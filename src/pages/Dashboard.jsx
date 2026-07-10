@@ -157,6 +157,10 @@ export default function Dashboard() {
 
   // Visitor trend: group pageviews by day
   const dayMap = {}
+  const safePath = (url) => {
+    if (!url) return '/'
+    try { return new URL(url).pathname } catch { return url.startsWith('/') ? url : '/' }
+  }
   pageviews.forEach(e => {
     const day = new Date(e.occurred_at).toLocaleDateString('en-US', { weekday: 'short' })
     if (!dayMap[day]) dayMap[day] = { day, visitors: new Set(), pageviews: 0 }
@@ -172,13 +176,13 @@ export default function Dashboard() {
   // Top exit pages
   const pageStats = {}
   pageviews.forEach(e => {
-    const path = e.url ? new URL(e.url).pathname : '/'
+    const path = safePath(e.url)
     if (!pageStats[path]) pageStats[path] = { visitors: new Set(), pageviews: 0, exits: 0 }
     pageStats[path].visitors.add(e.session_id)
     pageStats[path].pageviews++
   })
   exits.forEach(e => {
-    const path = e.url ? new URL(e.url).pathname : '/'
+    const path = safePath(e.url)
     if (!pageStats[path]) pageStats[path] = { visitors: new Set(), pageviews: 0, exits: 0 }
     pageStats[path].exits++
   })
